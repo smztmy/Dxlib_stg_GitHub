@@ -12,7 +12,7 @@
 #define TAMA_DIV_MAX	4	//’e‚Ì‰æ‘œ‚ÌÅ‘å”
 #define TAMA_MAX		300	//’e‚Ì‘”
 #define TEKI_KIND		8	//“G‚Ìí—Ş
-#define TEKI_MAX		10	//“G‚Ì”
+#define TEKI_MAX		20	//“G‚Ì”
 
 //\‘¢‘Ì‚Ì’è‹`
 
