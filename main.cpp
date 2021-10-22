@@ -11,8 +11,10 @@
 //マクロ定義
 #define TAMA_DIV_MAX	4	//弾の画像の最大数
 #define TAMA_MAX		300	//弾の総数
-#define TEKI_KIND		8	//敵の種類
-#define TEKI_MAX		20	//敵の数
+#define TEKI_KIND		5	//敵の種類
+#define TEKI_MAX		30	//敵の数
+
+
 
 //構造体の定義
 
@@ -95,6 +97,8 @@ struct TAMA
 	BOOL IsDraw = FALSE;	//描画できる
 };
 
+
+
 //グローバル変数
 //シーンを管理する変数
 GAME_SCENE GameScene;		//現在のゲームのシーン
@@ -105,6 +109,7 @@ GAME_SCENE NextGameScene;	//次のゲームのシーン
 IMAGE TitleLogo;	//タイトルロゴ
 IMAGE TitleEnter;	//エンターキーを押してね
 IMAGE EndClear;		//クリアロゴ
+IMAGE EndEnter;		//クリアロゴ
 IMAGE TitleBackground;
 IMAGE EndBackground;
 
@@ -152,14 +157,11 @@ CHARACTOR teki[TEKI_MAX];
 
 char tekiPath[TEKI_KIND][255] =
 {
-	(".\\Image\\teki_blue.png"),
-	(".\\Image\\teki_gray.png"),
-	(".\\Image\\teki_green.png"),
-	(".\\Image\\teki_mizu.png"),
-	(".\\Image\\teki_purple.png"),
-	(".\\Image\\teki_red.png"),
-	(".\\Image\\teki_red_big.png"),
-	(".\\Image\\teki_yellow.png")
+	(".\\Image\\teki_1.png"),
+	(".\\Image\\teki_2.png"),
+	(".\\Image\\teki_3.png"),
+	(".\\Image\\teki_4.png"),
+	(".\\Image\\teki_5.png"),
 };
 
 //敵が出てくるカウント
@@ -212,9 +214,6 @@ VOID ShotTama(TAMA* tama, float deg);		//弾の発射
 
 BOOL LoadImageDivMem(int* handle, const char* path, int bunkatuYoko, int bunkatuTate);	//ゲームの画像の分割読み込み
 
-// プログラムは WinMain から始まります
-//Windowsのプログラミング方法 = (WinAPI)で動いている！
-//DxLibは、DirectXという、ゲームプログラミングをかんたんに使える仕組み
 int WINAPI WinMain(
 	HINSTANCE hInstance,
 	HINSTANCE hPrevInstance,
@@ -342,6 +341,9 @@ int WINAPI WinMain(
 	return 0;	// ソフトの終了 
 }
 
+
+
+
 /// <summary>
 /// ゲームのデータを読み込み
 /// </summary>
@@ -349,11 +351,11 @@ int WINAPI WinMain(
 BOOL GameLoad(VOID)
 {
 	//弾の分割数を設定
-	tama_moto.DivYoko = 4;
+	tama_moto.DivYoko = 6;
 	tama_moto.DivTate = 1;
 
 	//弾のパス
-	strcpyDx(tama_moto.path, ".\\Image\\dan_blue.png");
+	strcpyDx(tama_moto.path, ".\\Image\\maru_red.png");
 
 	//画像を分割して読み込み
 	if (LoadImageDivMem(&tama_moto.handle[0], tama_moto.path, tama_moto.DivYoko, tama_moto.DivTate) == FALSE) { return FALSE; }
@@ -382,20 +384,20 @@ BOOL GameLoad(VOID)
 	}
 
 	//プレイヤーの画像を読み込み
-	if (LoadImageMem(&player.img, ".\\Image\\player.png") == FALSE) { return FALSE; }
+	if (LoadImageMem(&player.img, ".\\Image\\player_1.png") == FALSE) { return FALSE; }
 	player.img.x = GAME_WIDTH / 2 - player.img.width;
 	player.img.y = GAME_HEIGHT / 2 - player.img.height;
 	CollUpdatePlayer(&player);		//当たり判定更新
 	player.img.IsDraw = TRUE;		//描画する
 
 	//背景の画像を読み込み①
-	if (LoadImageMem(&back[0], ".\\Image\\hoshi.png") == FALSE) { return FALSE; }
+	if (LoadImageMem(&back[0], ".\\Image\\宇宙_1.png") == FALSE) { return FALSE; }
 	back[0].x = 0;
 	back[0].y = -back[0].height;		//画像の高さ分、位置を上げる
 	back[0].IsDraw = TRUE;				//描画する
 
 	//背景の画像を読み込み②
-	if (LoadImageMem(&back[1], ".\\Image\\hoshi_rev.jpg") == FALSE) { return FALSE; }
+	if (LoadImageMem(&back[1], ".\\Image\\宇宙.png") == FALSE) { return FALSE; }
 	back[1].x = 0;
 	back[1].y = 0;		//画像の高さ分、位置を上げる
 	back[1].IsDraw = TRUE;				//描画する
@@ -411,18 +413,19 @@ BOOL GameLoad(VOID)
 	}
 
 	//ロゴを読み込む
-	if (!LoadImageMem(&TitleLogo, ".\\Image\\シューティングゲーム.\png")) { return FALSE; }
+	if (!LoadImageMem(&TitleLogo, ".\\Image\\Strike Shoot.\png")) { return FALSE; }
 	if (!LoadImageMem(&TitleEnter, ".\\Image\\†Game Start†.\png")) { return FALSE; }
-	if (!LoadImageMem(&EndClear, ".\\Image\\ゲームクリア.\png")) { return FALSE; }
+	if (!LoadImageMem(&EndClear, ".\\Image\\ゲームクリア！_1.\png")) { return FALSE; }
+	if (!LoadImageMem(&EndEnter, ".\\Image\\End_Push Enter.\png")) { return FALSE; }
 
 	//背景を読み込む
-	if (!LoadImageMem(&TitleBackground, ".\\Image\\space.\jpg")) { return FALSE; }
-	if (!LoadImageMem(&EndBackground, ".\\Image\\bakuhatu.\jpg")) { return FALSE; }
+	if (!LoadImageMem(&TitleBackground, ".\\Image\\space_0.\png")) { return FALSE; }
+	if (!LoadImageMem(&EndBackground, ".\\Image\\space_1.\png")) { return FALSE; }
 
 	//音楽を読み込む
-	if (!LoadAudio(&TitleBGM, ".\\Audio\\ゾンビホラーパニック_2.mp3", 255, DX_PLAYTYPE_LOOP)) { return FALSE; }
-	if (!LoadAudio(&PlayBGM, ".\\Audio\\Lower_the_Fangs.mp3", 255, DX_PLAYTYPE_LOOP)) { return FALSE; }
-	if (!LoadAudio(&EndBGM, ".\\Audio\\だれもいないはずだった.mp3", 255, DX_PLAYTYPE_LOOP)) { return FALSE; }
+	if (!LoadAudio(&TitleBGM, ".\\Audio\\タイトル.mp3", 255, DX_PLAYTYPE_LOOP)) { return FALSE; }
+	if (!LoadAudio(&PlayBGM, ".\\Audio\\プレイ.mp3", 255, DX_PLAYTYPE_LOOP)) { return FALSE; }
+	if (!LoadAudio(&EndBGM, ".\\Audio\\エンド.mp3", 255, DX_PLAYTYPE_LOOP)) { return FALSE; }
 
 	return TRUE;	//全て読み込みた！
 }
@@ -596,6 +599,8 @@ VOID GameInit(VOID)
 	//PushEnterの位置を決める
 	TitleEnter.x = GAME_WIDTH / 2 - TitleLogo.width / 2;	//中央揃え
 	TitleEnter.y = GAME_HEIGHT - TitleEnter.height - 100;
+	EndEnter.x = GAME_WIDTH / 2 - TitleLogo.width / 2;	//中央揃え
+	EndEnter.y = GAME_HEIGHT - EndEnter.height - 100;
 
 	//pushEnterの点滅
 	PushEnterCnt = 0;
@@ -604,7 +609,7 @@ VOID GameInit(VOID)
 
 	//クリアロゴの位置を決める
 	EndClear.x = GAME_WIDTH / 2 - EndClear.width / 2;	//中央揃え
-	EndClear.y = GAME_HEIGHT / 2 - EndClear.height / 2;	//中央揃え
+	EndClear.y = 100;	//中央揃え
 
 
 }
@@ -697,9 +702,6 @@ VOID TitleDraw(VOID)
 		DrawGraph(TitleEnter.x, TitleEnter.y, TitleEnter.handle, TRUE);
 	}
 
-	//PushEnterの描画
-		//DrawGraph(TitleEnter.x, TitleEnter.y, TitleEnter.handle, TRUE);
-
 	DrawString(0, 0, "タイトル画面", GetColor(0, 0, 0));
 	return;
 }
@@ -776,9 +778,9 @@ VOID PlayProc(VOID)
 		PlaySoundMem(PlayBGM.handle, PlayBGM.playType);
 	}
 
-	/*
+	
 	//プレイヤーを操作
-	if (KeyDown(KEY_INPUT_LEFT) == TRUE)
+	if (KeyDown(KEY_INPUT_A) == TRUE)
 	{
 		if (player.img.x - player.speed >= 0)
 		{
@@ -786,15 +788,15 @@ VOID PlayProc(VOID)
 		}
 	}
 
-	if (KeyDown(KEY_INPUT_RIGHT) == TRUE)
+	if (KeyDown(KEY_INPUT_D) == TRUE)
 	{
 		if (player.img.x + player.img.width + player.speed <= GAME_WIDTH)
 		{
 			player.img.x += player.speed;
 		}
 	}
-
-	if (KeyDown(KEY_INPUT_UP) == TRUE)
+	
+	if (KeyDown(KEY_INPUT_W) == TRUE)
 	{
 		if (player.img.y - player.speed >= 0)
 		{
@@ -802,26 +804,16 @@ VOID PlayProc(VOID)
 		}
 	}
 
-	if (KeyDown(KEY_INPUT_DOWN) == TRUE)
+	if (KeyDown(KEY_INPUT_S) == TRUE)
 	{
 		if (player.img.y + player.img.height + player.speed <= GAME_HEIGHT)
 		{
 			player.img.y += player.speed;
 		}
 	}
-	*/
-
-	//マウスの位置にプレイヤーを置く
-	player.img.x = mouse.Point.x - player.img.width / 2;		//マウスの位置を画像の中心にする
-	player.img.y = mouse.Point.y - player.img.height / 2;		//マウスの位置を画像の中心にする
-
+	
 	//プレイヤーの当たり判定の更新
 	CollUpdatePlayer(&player);
-
-	/*
-	//スペースキーを押しているとき
-	if (KeyDown(KEY_INPUT_SPACE) == TRUE)
-	*/
 
 	//マウスを左ボタンを押しているとき
 	if (MouseDown(MOUSE_INPUT_LEFT) == TRUE)
@@ -835,103 +827,7 @@ VOID PlayProc(VOID)
 				{
 					if (tama[i].IsDraw == FALSE)
 					{
-						ShotTama(&tama[i], 210);
-
-						//弾を1発出したら、ループを抜ける
-						break;
-					}
-				}
-
-				//弾を発射する(弾を描画する)
-				for (int i = 0; i < TAMA_MAX; i++)
-				{
-					if (tama[i].IsDraw == FALSE)
-					{
-						ShotTama(&tama[i], 225);
-
-						//弾を1発出したら、ループを抜ける
-						break;
-					}
-				}
-
-				//弾を発射する(弾を描画する)
-				for (int i = 0; i < TAMA_MAX; i++)
-				{
-					if (tama[i].IsDraw == FALSE)
-					{
-						ShotTama(&tama[i], 240);
-
-						//弾を1発出したら、ループを抜ける
-						break;
-					}
-				}
-
-				//弾を発射する(弾を描画する)
-				for (int i = 0; i < TAMA_MAX; i++)
-				{
-					if (tama[i].IsDraw == FALSE)
-					{
-						ShotTama(&tama[i], 255);
-
-						//弾を1発出したら、ループを抜ける
-						break;
-					}
-				}
-
-				//弾を発射する(弾を描画する)
-				for (int i = 0; i < TAMA_MAX; i++)
-				{
-					if (tama[i].IsDraw == FALSE)
-					{
 						ShotTama(&tama[i], 270);
-
-						//弾を1発出したら、ループを抜ける
-						break;
-					}
-				}
-
-				//弾を発射する(弾を描画する)
-				for (int i = 0; i < TAMA_MAX; i++)
-				{
-					if (tama[i].IsDraw == FALSE)
-					{
-						ShotTama(&tama[i], 285);
-
-						//弾を1発出したら、ループを抜ける
-						break;
-					}
-				}
-
-				//弾を発射する(弾を描画する)
-				for (int i = 0; i < TAMA_MAX; i++)
-				{
-					if (tama[i].IsDraw == FALSE)
-					{
-						ShotTama(&tama[i], 300);
-
-						//弾を1発出したら、ループを抜ける
-						break;
-					}
-				}
-
-				//弾を発射する(弾を描画する)
-				for (int i = 0; i < TAMA_MAX; i++)
-				{
-					if (tama[i].IsDraw == FALSE)
-					{
-						ShotTama(&tama[i], 315);
-
-						//弾を1発出したら、ループを抜ける
-						break;
-					}
-				}
-
-				//弾を発射する(弾を描画する)
-				for (int i = 0; i < TAMA_MAX; i++)
-				{
-					if (tama[i].IsDraw == FALSE)
-					{
-						ShotTama(&tama[i], 330);
 
 						//弾を1発出したら、ループを抜ける
 						break;
@@ -1051,6 +947,7 @@ VOID PlayProc(VOID)
 
 						Score += 100;					//スコア加算
 					}
+
 				}
 			}
 		}
@@ -1111,20 +1008,6 @@ VOID PlayDraw(VOID)
 	//敵の描画
 	for (int i = 0; i < TEKI_MAX; i++)
 	{
-		/*
-		if (teki[i].img.IsDraw == TRUE)
-		{
-			DrawGraph(teki[i].img.x, teki[i].img.y, teki[i].img.handle, TRUE);
-		}
-
-		//当たり判定
-		if (GAME_DEBUG == TRUE)
-		{
-			DrawBox(teki[i].coll.left, teki[i].coll.top, teki[i].coll.right, teki[i].coll.bottom,
-				GetColor(0, 0, 255), FALSE);
-		}
-		*/
-
 		//敵が描画できるときは
 		if (teki[i].img.IsDraw == TRUE)
 		{
@@ -1135,7 +1018,7 @@ VOID PlayDraw(VOID)
 			{
 				DrawBox(
 					teki[i].coll.left, teki[i].coll.top, teki[i].coll.right, teki[i].coll.bottom,
-					GetColor(0, 0, 255), FALSE);
+					GetColor(0, 0, 0), FALSE);
 			}
 		}
 	}
@@ -1150,7 +1033,7 @@ VOID PlayDraw(VOID)
 		if (GAME_DEBUG == TRUE)
 		{
 			DrawBox(player.coll.left, player.coll.top, player.coll.right, player.coll.bottom,
-				GetColor(255, 0, 0), FALSE);
+				GetColor(0, 0, 0), FALSE);
 		}
 	}
 
@@ -1166,7 +1049,7 @@ VOID PlayDraw(VOID)
 			if (GAME_DEBUG == TRUE)
 			{
 				DrawBox(tama[i].coll.left, tama[i].coll.top, tama[i].coll.right, tama[i].coll.bottom,
-					GetColor(255, 0, 0), FALSE);
+					GetColor(0, 0, 0), FALSE);
 			}
 		}
 	}
@@ -1232,6 +1115,12 @@ VOID EndDraw(VOID)
 
 	//EndClearの描画
 	DrawGraph(EndClear.x, EndClear.y, EndClear.handle, TRUE);
+
+	if (PushEnterBrink == TRUE)
+	{
+		//PushEnterの描画
+		DrawGraph(EndEnter.x, EndEnter.y, EndEnter.handle, TRUE);
+	}
 
 	DrawString(0, 0, "エンド画面", GetColor(0, 0, 0));
 	return;
