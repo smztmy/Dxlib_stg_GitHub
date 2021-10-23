@@ -12,7 +12,7 @@
 #define TAMA_DIV_MAX	4	//弾の画像の最大数
 #define TAMA_MAX		300	//弾の総数
 #define TEKI_KIND		5	//敵の種類
-#define TEKI_MAX		30	//敵の数
+#define TEKI_MAX		50	//敵の数
 
 
 
@@ -36,7 +36,7 @@ struct IMAGE
 struct CHARACTOR
 {
 	IMAGE img;			//画像構造体
-	int speed = 5;		//移動速度	
+	int speed = 8;		//移動速度	
 	RECT coll;			//当たり判定の領域(四角)
 };
 
@@ -367,7 +367,7 @@ BOOL GameLoad(VOID)
 	tama_moto.x = GAME_WIDTH / 2 - tama_moto.width / 2;	//中央揃え
 	tama_moto.y = GAME_HEIGHT- tama_moto.height;		//画面下
 
-	tama_moto.Speed = 8;	//速度
+	tama_moto.Speed = 10;	//速度
 
 	tama_moto.AnimeCntMax = 50;
 
@@ -415,7 +415,7 @@ BOOL GameLoad(VOID)
 	//ロゴを読み込む
 	if (!LoadImageMem(&TitleLogo, ".\\Image\\Strike Shoot.\png")) { return FALSE; }
 	if (!LoadImageMem(&TitleEnter, ".\\Image\\†Game Start†.\png")) { return FALSE; }
-	if (!LoadImageMem(&EndClear, ".\\Image\\ゲームクリア！_1.\png")) { return FALSE; }
+	if (!LoadImageMem(&EndClear, ".\\Image\\End Game.\png")) { return FALSE; }
 	if (!LoadImageMem(&EndEnter, ".\\Image\\End_Push Enter.\png")) { return FALSE; }
 
 	//背景を読み込む
@@ -755,7 +755,38 @@ VOID Play(VOID)
 /// </summary>
 VOID PlayProc(VOID)
 {
-	if (KeyClick(KEY_INPUT_RETURN) == TRUE)
+	//if (KeyClick(KEY_INPUT_RETURN) == TRUE)
+	if (teki[0].img.y > GAME_HEIGHT == TRUE)
+	{
+		//シーン切り替え
+		//次のシーンの初期化をここで行うと楽
+		//BGMを止める
+		StopSoundMem(PlayBGM.handle);
+
+		//プレイ画面に切り替え
+		ChangeScene(GAME_SCENE_END);
+
+		//マウスを描画する
+		SetMouseDispFlag(TRUE);
+
+		return;
+	}
+	else if (OnCollRect(player.coll,teki->coll) == TRUE)
+	{
+		//シーン切り替え
+		//次のシーンの初期化をここで行うと楽
+		//BGMを止める
+		StopSoundMem(PlayBGM.handle);
+
+		//プレイ画面に切り替え
+		ChangeScene(GAME_SCENE_END);
+
+		//マウスを描画する
+		SetMouseDispFlag(TRUE);
+
+		return;
+	}
+	else if(Score>=10000)
 	{
 		//シーン切り替え
 		//次のシーンの初期化をここで行うと楽
@@ -828,6 +859,30 @@ VOID PlayProc(VOID)
 					if (tama[i].IsDraw == FALSE)
 					{
 						ShotTama(&tama[i], 270);
+
+						//弾を1発出したら、ループを抜ける
+						break;
+					}
+				}
+
+				//弾を発射する(弾を描画する)
+				for (int i = 0; i < TAMA_MAX; i++)
+				{
+					if (tama[i].IsDraw == FALSE)
+					{
+						ShotTama(&tama[i], 280);
+
+						//弾を1発出したら、ループを抜ける
+						break;
+					}
+				}
+
+				//弾を発射する(弾を描画する)
+				for (int i = 0; i < TAMA_MAX; i++)
+				{
+					if (tama[i].IsDraw == FALSE)
+					{
+						ShotTama(&tama[i], 260);
 
 						//弾を1発出したら、ループを抜ける
 						break;
