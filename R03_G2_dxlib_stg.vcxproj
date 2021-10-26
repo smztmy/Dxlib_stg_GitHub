@@ -24,7 +24,7 @@
     <ProjectGuid>{bc8b4a06-a5aa-4d3d-b538-b95144ba9ff3}</ProjectGuid>
     <RootNamespace>R03_G2_dxlib_stg</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>dxlib_stg_game</ProjectName>
+    <ProjectName>stg_game</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

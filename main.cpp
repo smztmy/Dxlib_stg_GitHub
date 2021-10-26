@@ -10,7 +10,7 @@
 
 //マクロ定義
 #define TAMA_DIV_MAX	4	//弾の画像の最大数
-#define TAMA_MAX		300	//弾の総数
+#define TAMA_MAX		20	//弾の総数
 #define TEKI_KIND		5	//敵の種類
 #define TEKI_MAX		50	//敵の数
 
@@ -117,6 +117,9 @@ IMAGE EndBackground;
 AUDIO TitleBGM;
 AUDIO PlayBGM;
 AUDIO EndBGM;
+
+AUDIO PlayerSE;
+AUDIO EnemySE;
 
 //画面の切り替え
 BOOL IsFadeOut = FALSE;		//フェードアウト
@@ -335,6 +338,9 @@ int WINAPI WinMain(
 		DeleteGraph(teki_moto[i].img.handle);
 	}
 
+	DeleteSoundMem(PlayerSE.handle);
+	DeleteSoundMem(EnemySE.handle);
+
 	//ＤＸライブラリ使用の終了処理
 	DxLib_End();
 
@@ -367,7 +373,7 @@ BOOL GameLoad(VOID)
 	tama_moto.x = GAME_WIDTH / 2 - tama_moto.width / 2;	//中央揃え
 	tama_moto.y = GAME_HEIGHT- tama_moto.height;		//画面下
 
-	tama_moto.Speed = 10;	//速度
+	tama_moto.Speed = 15;	//速度
 
 	tama_moto.AnimeCntMax = 50;
 
@@ -426,6 +432,10 @@ BOOL GameLoad(VOID)
 	if (!LoadAudio(&TitleBGM, ".\\Audio\\タイトル.mp3", 255, DX_PLAYTYPE_LOOP)) { return FALSE; }
 	if (!LoadAudio(&PlayBGM, ".\\Audio\\プレイ.mp3", 255, DX_PLAYTYPE_LOOP)) { return FALSE; }
 	if (!LoadAudio(&EndBGM, ".\\Audio\\エンド.mp3", 255, DX_PLAYTYPE_LOOP)) { return FALSE; }
+
+	//効果音
+	if (!LoadAudio(&PlayerSE, ".\\Audio\\ショット.mp3", 255, DX_PLAYTYPE_BACK)) { return FALSE; }
+	if (!LoadAudio(&EnemySE, ".\\Audio\\ショット命中.mp3", 255, DX_PLAYTYPE_BACK)) { return FALSE; }
 
 	return TRUE;	//全て読み込みた！
 }
@@ -856,6 +866,10 @@ VOID PlayProc(VOID)
 				//弾を発射する(弾を描画する)
 				for (int i = 0; i < TAMA_MAX; i++)
 				{
+					if (CheckSoundMem(PlayerSE.handle) == 0)
+					{
+						PlaySoundMem(PlayerSE.handle, PlayerSE.playType);
+					}
 					if (tama[i].IsDraw == FALSE)
 					{
 						ShotTama(&tama[i], 270);
@@ -868,6 +882,12 @@ VOID PlayProc(VOID)
 				//弾を発射する(弾を描画する)
 				for (int i = 0; i < TAMA_MAX; i++)
 				{
+					/*
+					if (CheckSoundMem(PlayerSE.handle) == 0)
+					{
+						PlaySoundMem(PlayerSE.handle, PlayerSE.playType);
+					}
+					*/
 					if (tama[i].IsDraw == FALSE)
 					{
 						ShotTama(&tama[i], 280);
@@ -880,6 +900,12 @@ VOID PlayProc(VOID)
 				//弾を発射する(弾を描画する)
 				for (int i = 0; i < TAMA_MAX; i++)
 				{
+					/*
+					if (CheckSoundMem(PlayerSE.handle) == 0)
+					{
+						PlaySoundMem(PlayerSE.handle, PlayerSE.playType);
+					}
+					*/
 					if (tama[i].IsDraw == FALSE)
 					{
 						ShotTama(&tama[i], 260);
@@ -945,7 +971,7 @@ VOID PlayProc(VOID)
 			//描画されていないてきを探す
 			if (teki[i].img.IsDraw == FALSE)
 			{
-				int Bunkatu = 10;
+				int Bunkatu = 30;
 
 				if (Score < 1000)
 				{
@@ -1000,15 +1026,17 @@ VOID PlayProc(VOID)
 						tama[cnt].IsDraw = FALSE;			//弾の表示をしない
 						teki[i].img.IsDraw = FALSE;		//敵の表示をしない
 
-						Score += 100;					//スコア加算
-					}
+						Score += 500;					//スコア加算
 
+						if (CheckSoundMem(EnemySE.handle) == 0)
+						{
+							PlaySoundMem(EnemySE.handle, EnemySE.playType);
+						}
+					}
 				}
 			}
 		}
 	}
-
-
 	return;
 }
 
@@ -1026,7 +1054,7 @@ VOID ShotTama(TAMA* tama,float deg)
 		tama->StartY = player.img.y;
 
 		//弾の速度を変える
-		tama->Speed = 6;
+		tama->Speed = 8;
 
 		//弾の角度
 		tama->degree = deg;
@@ -1069,7 +1097,7 @@ VOID PlayDraw(VOID)
 			DrawGraph(teki[i].img.x, teki[i].img.y, teki[i].img.handle, TRUE);
 
 			//当たり判定の描画
-			if (GAME_DEBUG == TRUE)
+			if (GAME_DEBUG == FALSE)
 			{
 				DrawBox(
 					teki[i].coll.left, teki[i].coll.top, teki[i].coll.right, teki[i].coll.bottom,
@@ -1085,7 +1113,7 @@ VOID PlayDraw(VOID)
 		DrawGraph(player.img.x, player.img.y, player.img.handle, TRUE);
 
 		//当たり判定
-		if (GAME_DEBUG == TRUE)
+		if (GAME_DEBUG == FALSE)
 		{
 			DrawBox(player.coll.left, player.coll.top, player.coll.right, player.coll.bottom,
 				GetColor(0, 0, 0), FALSE);
@@ -1101,7 +1129,7 @@ VOID PlayDraw(VOID)
 			DrawTama(&tama[i]);
 
 			//当たり判定
-			if (GAME_DEBUG == TRUE)
+			if (GAME_DEBUG == FALSE)
 			{
 				DrawBox(tama[i].coll.left, tama[i].coll.top, tama[i].coll.right, tama[i].coll.bottom,
 					GetColor(0, 0, 0), FALSE);
@@ -1171,6 +1199,7 @@ VOID EndDraw(VOID)
 	//EndClearの描画
 	DrawGraph(EndClear.x, EndClear.y, EndClear.handle, TRUE);
 
+	//PushEnterの点滅
 	if (PushEnterBrink == TRUE)
 	{
 		//PushEnterの描画
