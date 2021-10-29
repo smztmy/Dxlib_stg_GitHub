@@ -721,7 +721,7 @@ VOID TitleDraw(VOID)
 		DrawGraph(TitleEnter.x, TitleEnter.y, TitleEnter.handle, TRUE);
 	}
 
-	DrawString(0, 0, "タイトル画面", GetColor(0, 0, 0));
+	//DrawString(0, 0, "タイトル画面", GetColor(0, 0, 0));
 	return;
 }
 
@@ -1160,7 +1160,7 @@ VOID PlayDraw(VOID)
 	//マウスの位置を描画
 	MouseDraw();
 
-	DrawString(0, 0, "プレイ画面", GetColor(0, 0, 0));
+	//DrawString(0, 0, "プレイ画面", GetColor(0, 0, 0));
 	return;
 }
 
@@ -1230,7 +1230,7 @@ VOID EndDraw(VOID)
 		DrawGraph(EndEnter.x, EndEnter.y, EndEnter.handle, TRUE);
 	}
 
-	DrawString(0, 0, "エンド画面", GetColor(0, 0, 0));
+	//DrawString(0, 0, "エンド画面", GetColor(0, 0, 0));
 	return;
 }
 
@@ -1334,7 +1334,7 @@ VOID ChangeDraw(VOID)
 	//半透明終了
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
-	DrawString(0, 0, "切り替え画面", GetColor(0, 0, 0));
+	//DrawString(0, 0, "切り替え画面", GetColor(0, 0, 0));
 	return;
 }
 
