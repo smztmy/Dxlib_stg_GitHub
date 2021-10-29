@@ -177,8 +177,11 @@ int Score = 0;
 
 //PushEnterの点滅
 int PushEnterCnt = 0;			//カウンタ
+int EndEnterCnt = 0;			//カウンタ
 int PushEnterCntMax = 60;		//カウンタMAX値
+int EndEnterCntMax = 60;		//カウンタMAX値
 BOOL PushEnterBrink = FALSE;	//点滅しているか
+BOOL EndEnterBrink = FALSE;		//点滅しているか
 
 //プロトタイプ宣言
 VOID Title(VOID);		//タイトル画面
@@ -610,15 +613,18 @@ VOID GameInit(VOID)
 	TitleLogo.y = 100;
 
 	//PushEnterの位置を決める
-	TitleEnter.x = GAME_WIDTH / 2 - TitleLogo.width / 2;	//中央揃え
+	TitleEnter.x = GAME_WIDTH / 2.3 - TitleLogo.width / 2.3;	//中央揃え
 	TitleEnter.y = GAME_HEIGHT - TitleEnter.height - 100;
-	EndEnter.x = GAME_WIDTH / 2 - TitleLogo.width / 2;	//中央揃え
+	EndEnter.x = GAME_WIDTH / 2.2 - TitleLogo.width / 2.2;	//中央揃え
 	EndEnter.y = GAME_HEIGHT - EndEnter.height - 100;
 
 	//pushEnterの点滅
 	PushEnterCnt = 0;
+	EndEnterCnt = 0;
 	PushEnterCntMax = 60;
+	EndEnterCntMax = 60;
 	PushEnterBrink = FALSE;
+	EndEnterBrink = FALSE;
 
 	//クリアロゴの位置を決める
 	EndClear.x = GAME_WIDTH / 2 - EndClear.width / 2;	//中央揃え
@@ -1207,8 +1213,18 @@ VOID EndDraw(VOID)
 	//EndClearの描画
 	DrawGraph(EndClear.x, EndClear.y, EndClear.handle, TRUE);
 
+	//MAX値まで待つ
+	if (PushEnterCnt < PushEnterCntMax) { PushEnterCnt++; }
+	else
+	{
+		if (EndEnterBrink == TRUE)EndEnterBrink = FALSE;
+		else if (EndEnterBrink == FALSE)EndEnterBrink = TRUE;
+
+		PushEnterCnt = 0;	//カウンタを初期化
+	}
+
 	//PushEnterの点滅
-	if (PushEnterBrink == TRUE)
+	if (EndEnterBrink == TRUE)
 	{
 		//PushEnterの描画
 		DrawGraph(EndEnter.x, EndEnter.y, EndEnter.handle, TRUE);
