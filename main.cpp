@@ -120,6 +120,7 @@ AUDIO EndBGM;
 
 AUDIO PlayerSE;
 AUDIO EnemySE;
+AUDIO CollisionSE;
 
 //画面の切り替え
 BOOL IsFadeOut = FALSE;		//フェードアウト
@@ -340,6 +341,7 @@ int WINAPI WinMain(
 
 	DeleteSoundMem(PlayerSE.handle);
 	DeleteSoundMem(EnemySE.handle);
+	DeleteSoundMem(CollisionSE.handle);
 
 	//ＤＸライブラリ使用の終了処理
 	DxLib_End();
@@ -436,6 +438,7 @@ BOOL GameLoad(VOID)
 	//効果音
 	if (!LoadAudio(&PlayerSE, ".\\Audio\\ショット.mp3", 255, DX_PLAYTYPE_BACK)) { return FALSE; }
 	if (!LoadAudio(&EnemySE, ".\\Audio\\ショット命中.mp3", 255, DX_PLAYTYPE_BACK)) { return FALSE; }
+	if (!LoadAudio(&CollisionSE, ".\\Audio\\衝突・衝撃（鉄）01.mp3", 255, DX_PLAYTYPE_BACK)) { return FALSE; }
 
 	return TRUE;	//全て読み込みた！
 }
@@ -793,6 +796,11 @@ VOID PlayProc(VOID)
 
 		//マウスを描画する
 		SetMouseDispFlag(TRUE);
+
+		if (CheckSoundMem(CollisionSE.handle) == 0)
+		{
+			PlaySoundMem(CollisionSE.handle, CollisionSE.playType);
+		}
 
 		return;
 	}
