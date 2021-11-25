@@ -11,7 +11,7 @@
 //マクロ定義
 #define TAMA_DIV_MAX	4	//弾の画像の最大数
 #define TAMA_MAX		20	//弾の総数
-#define TEKI_KIND		5	//敵の種類
+#define TEKI_KIND		4	//敵の種類
 #define TEKI_MAX		50	//敵の数
 
 
@@ -108,14 +108,18 @@ GAME_SCENE NextGameScene;	//次のゲームのシーン
 //画像を読み込む
 IMAGE TitleLogo;	//タイトルロゴ
 IMAGE TitleEnter;	//エンターキーを押してね
-IMAGE EndClear;		//クリアロゴ
-IMAGE EndEnter;		//クリアロゴ
+IMAGE EndClear;		//ロゴ
+IMAGE EndEnter;		//エンターキー
+IMAGE GameOverLogo;		//ロゴ
+IMAGE GameOverEnter;		//エンターキー
 IMAGE TitleBackground;
 IMAGE EndBackground;
+IMAGE GameOverBackground;
 
 //音楽
 AUDIO TitleBGM;
 AUDIO PlayBGM;
+AUDIO GameOverBGM;
 AUDIO EndBGM;
 
 AUDIO PlayerSE;
@@ -161,11 +165,11 @@ CHARACTOR teki[TEKI_MAX];
 
 char tekiPath[TEKI_KIND][255] =
 {
-	(".\\Image\\teki_1.png"),
-	(".\\Image\\teki_2.png"),
-	(".\\Image\\teki_3.png"),
-	(".\\Image\\teki_4.png"),
-	(".\\Image\\teki_5.png"),
+	(".\\Image\\レイヤー_1.png"),
+	(".\\Image\\レイヤー_2.png"),
+	(".\\Image\\レイヤー_3.png"),
+	(".\\Image\\レイヤー_14.png"),
+	//(".\\Image\\teki_5.png"),
 };
 
 //敵が出てくるカウント
@@ -178,10 +182,13 @@ int Score = 0;
 //PushEnterの点滅
 int PushEnterCnt = 0;			//カウンタ
 int EndEnterCnt = 0;			//カウンタ
+int GameOverEnterCnt = 0;			//カウンタ
 int PushEnterCntMax = 60;		//カウンタMAX値
 int EndEnterCntMax = 60;		//カウンタMAX値
+int GameOverEnterCntMax = 60;		//カウンタMAX値
 BOOL PushEnterBrink = FALSE;	//点滅しているか
 BOOL EndEnterBrink = FALSE;		//点滅しているか
+BOOL GameOverEnterBrink = FALSE;		//点滅しているか
 
 //プロトタイプ宣言
 VOID Title(VOID);		//タイトル画面
@@ -195,6 +202,11 @@ VOID PlayDraw(VOID);	//プレイ画面(描画)
 VOID End(VOID);			//エンド画面
 VOID EndProc(VOID);		//エンド画面(処理)
 VOID EndDraw(VOID);		//エンド画面(描画)
+
+VOID GameOver(VOID);			//エンド画面
+VOID GameOverProc(VOID);		//エンド画面(処理)
+VOID GameOverDraw(VOID);		//エンド画面(描画)
+
 
 VOID Change(VOID);		//切り替え画面
 VOID ChangeProc(VOID);	//切り替え画面(処理)
@@ -232,7 +244,7 @@ int WINAPI WinMain(
 	SetMainWindowText(GAME_TITLE);						//ウィンドウのタイトルの文字
 	SetGraphMode(GAME_WIDTH, GAME_HEIGHT, GAME_COLOR);	//ウィンドウの解像度を設定
 	SetWindowSize(GAME_WIDTH, GAME_HEIGHT);				//ウィンドウの大きさを設定
-	SetBackgroundColor(255, 255, 255);					//デフォルトの背景の色
+	SetBackgroundColor(0, 0, 0);					//デフォルトの背景の色
 	SetWindowIconID(GAME_ICON_ID);						//アイコンファイルを読込
 	SetWindowStyleMode(GAME_WINDOW_BAR);				//ウィンドウバーの状態
 	SetWaitVSyncFlag(TRUE);								//ディスプレイの垂直同期を有効にする
@@ -300,6 +312,9 @@ int WINAPI WinMain(
 		case GAME_SCENE_END:
 			End();				//エンド画面
 			break;
+		case GAME_SCENE_GAMEOVER:
+			End();				//エンド画面
+			break;
 		case GAME_SCENE_CHANGE:
 			Change();			//切り替え画面
 			break;
@@ -362,11 +377,11 @@ int WINAPI WinMain(
 BOOL GameLoad(VOID)
 {
 	//弾の分割数を設定
-	tama_moto.DivYoko = 6;
+	tama_moto.DivYoko = 4;
 	tama_moto.DivTate = 1;
 
 	//弾のパス
-	strcpyDx(tama_moto.path, ".\\Image\\maru_red.png");
+	strcpyDx(tama_moto.path, ".\\Image\\dia_blue.png");
 
 	//画像を分割して読み込み
 	if (LoadImageDivMem(&tama_moto.handle[0], tama_moto.path, tama_moto.DivYoko, tama_moto.DivTate) == FALSE) { return FALSE; }
@@ -395,20 +410,20 @@ BOOL GameLoad(VOID)
 	}
 
 	//プレイヤーの画像を読み込み
-	if (LoadImageMem(&player.img, ".\\Image\\player_1.png") == FALSE) { return FALSE; }
+	if (LoadImageMem(&player.img, ".\\Image\\プレイヤー.png") == FALSE) { return FALSE; }
 	player.img.x = GAME_WIDTH / 2 - player.img.width;
 	player.img.y = GAME_HEIGHT / 2 - player.img.height;
 	CollUpdatePlayer(&player);		//当たり判定更新
 	player.img.IsDraw = TRUE;		//描画する
 
 	//背景の画像を読み込み①
-	if (LoadImageMem(&back[0], ".\\Image\\宇宙_1.png") == FALSE) { return FALSE; }
-	back[0].x = 0;
-	back[0].y = -back[0].height;		//画像の高さ分、位置を上げる
+	if (LoadImageMem(&back[0], ".\\Image\\プレイ画面_1.jpg") == FALSE) { return FALSE; }
+	back[0].x = -back[0].width;
+	back[0].y = 0;		//画像の高さ分、位置を上げる
 	back[0].IsDraw = TRUE;				//描画する
 
 	//背景の画像を読み込み②
-	if (LoadImageMem(&back[1], ".\\Image\\宇宙.png") == FALSE) { return FALSE; }
+	if (LoadImageMem(&back[1], ".\\Image\\プレイ画面_2.png") == FALSE) { return FALSE; }
 	back[1].x = 0;
 	back[1].y = 0;		//画像の高さ分、位置を上げる
 	back[1].IsDraw = TRUE;				//描画する
@@ -424,19 +439,23 @@ BOOL GameLoad(VOID)
 	}
 
 	//ロゴを読み込む
-	if (!LoadImageMem(&TitleLogo, ".\\Image\\Strike Shoot.\png")) { return FALSE; }
-	if (!LoadImageMem(&TitleEnter, ".\\Image\\†Game Start†.\png")) { return FALSE; }
-	if (!LoadImageMem(&EndClear, ".\\Image\\End Game.\png")) { return FALSE; }
-	if (!LoadImageMem(&EndEnter, ".\\Image\\End_Push Enter.\png")) { return FALSE; }
+	if (!LoadImageMem(&TitleLogo, ".\\Image\\タイトルロゴ.png")) { return FALSE; }
+	if (!LoadImageMem(&TitleEnter, ".\\Image\\†Game Start†.png")) { return FALSE; }
+	if (!LoadImageMem(&EndClear, ".\\Image\\End Game.png")) { return FALSE; }
+	if (!LoadImageMem(&EndEnter, ".\\Image\\End_Push Enter.png")) { return FALSE; }
+	if (!LoadImageMem(&GameOverLogo, ".\\Image\\ゲームオーバー！.png")) { return FALSE; }
+	if (!LoadImageMem(&GameOverEnter, ".\\Image\\GameOver_Push Enter.png")) { return FALSE; }
 
 	//背景を読み込む
-	if (!LoadImageMem(&TitleBackground, ".\\Image\\space_0.\png")) { return FALSE; }
-	if (!LoadImageMem(&EndBackground, ".\\Image\\space_1.\png")) { return FALSE; }
+	if (!LoadImageMem(&TitleBackground, ".\\Image\\タイトル.png")) { return FALSE; }
+	if (!LoadImageMem(&EndBackground, ".\\Image\\エンド.png")) { return FALSE; }
+	if (!LoadImageMem(&GameOverBackground, ".\\Image\\ゲームオーバー.png")) { return FALSE; }
 
 	//音楽を読み込む
 	if (!LoadAudio(&TitleBGM, ".\\Audio\\タイトル.mp3", 255, DX_PLAYTYPE_LOOP)) { return FALSE; }
 	if (!LoadAudio(&PlayBGM, ".\\Audio\\プレイ.mp3", 255, DX_PLAYTYPE_LOOP)) { return FALSE; }
 	if (!LoadAudio(&EndBGM, ".\\Audio\\エンド.mp3", 255, DX_PLAYTYPE_LOOP)) { return FALSE; }
+	if (!LoadAudio(&GameOverBGM, ".\\Audio\\ゲームオーバー.mp3", 255, DX_PLAYTYPE_LOOP)) { return FALSE; }
 
 	//効果音
 	if (!LoadAudio(&PlayerSE, ".\\Audio\\ショット.mp3", 255, DX_PLAYTYPE_BACK)) { return FALSE; }
@@ -783,7 +802,7 @@ VOID PlayProc(VOID)
 		StopSoundMem(PlayBGM.handle);
 
 		//プレイ画面に切り替え
-		ChangeScene(GAME_SCENE_END);
+		ChangeScene(GAME_SCENE_GAMEOVER);
 
 		//マウスを描画する
 		SetMouseDispFlag(TRUE);
@@ -798,7 +817,7 @@ VOID PlayProc(VOID)
 		StopSoundMem(PlayBGM.handle);
 
 		//プレイ画面に切り替え
-		ChangeScene(GAME_SCENE_END);
+		ChangeScene(GAME_SCENE_GAMEOVER);
 
 		//マウスを描画する
 		SetMouseDispFlag(TRUE);
@@ -886,22 +905,23 @@ VOID PlayProc(VOID)
 					}
 					if (tama[i].IsDraw == FALSE)
 					{
-						ShotTama(&tama[i], 270);
+						ShotTama(&tama[i], 360);
 
 						//弾を1発出したら、ループを抜ける
 						break;
 					}
 				}
 
+				/*
 				//弾を発射する(弾を描画する)
 				for (int i = 0; i < TAMA_MAX; i++)
 				{
-					/*
+					
 					if (CheckSoundMem(PlayerSE.handle) == 0)
 					{
 						PlaySoundMem(PlayerSE.handle, PlayerSE.playType);
 					}
-					*/
+					
 					if (tama[i].IsDraw == FALSE)
 					{
 						ShotTama(&tama[i], 280);
@@ -911,15 +931,16 @@ VOID PlayProc(VOID)
 					}
 				}
 
+
 				//弾を発射する(弾を描画する)
 				for (int i = 0; i < TAMA_MAX; i++)
 				{
-					/*
+					
 					if (CheckSoundMem(PlayerSE.handle) == 0)
 					{
 						PlaySoundMem(PlayerSE.handle, PlayerSE.playType);
 					}
-					*/
+					
 					if (tama[i].IsDraw == FALSE)
 					{
 						ShotTama(&tama[i], 260);
@@ -928,6 +949,8 @@ VOID PlayProc(VOID)
 						break;
 					}
 				}
+				*/
+
 			//}
 		}
 
@@ -1093,9 +1116,9 @@ VOID PlayDraw(VOID)
 		DrawGraph(back[i].x, back[i].y, back[i].handle, TRUE);
 
 		//画像が下までいった時
-		if (back[i].y > GAME_HEIGHT)
+		if (back[i].x > GAME_WIDTH)
 		{
-			back[i].y = -back[i].height + 1;
+			back[i].x = -back[i].width + 1;
 		}
 
 		//画像を下に動かす
@@ -1161,6 +1184,70 @@ VOID PlayDraw(VOID)
 	MouseDraw();
 
 	//DrawString(0, 0, "プレイ画面", GetColor(0, 0, 0));
+	return;
+}
+
+/// <summary>
+/// ゲームオーバー画面
+/// </summary>
+/// <param name=""></param>
+VOID GameOver(VOID)
+{
+	GameOverProc();
+	GameOverDraw();
+}
+
+/// <summary>
+/// ゲームオーバー画面の処理
+/// </summary>
+/// <param name=""></param>
+VOID GameOverProc(VOID)
+{
+	if (KeyClick(KEY_INPUT_RETURN) == TRUE)
+	{
+		//BGMを止める
+		StopSoundMem(GameOverBGM.handle);
+		//タイトル画面切り替え
+		ChangeScene(GAME_SCENE_TITLE);
+
+		return;
+	}
+
+	//BGMが流れていない時
+	if (CheckSoundMem(GameOverBGM.handle) == 0)
+	{
+		//BGMを流す
+		PlaySoundMem(GameOverBGM.handle, GameOverBGM.playType);
+	}
+}
+
+/// <summary>
+/// ゲームオーバー画面の描画
+/// </summary>
+/// <param name=""></param>
+VOID GameOverDraw(VOID)
+{
+	DrawGraph(GameOverBackground.x, GameOverBackground.y, GameOverBackground.handle, TRUE);
+	DrawExtendGraph(0, 0, GAME_WIDTH, GAME_HEIGHT, GameOverBackground.handle, TRUE);
+
+	DrawGraph(GameOverEnter.x, GameOverEnter.y, GameOverEnter.handle, TRUE);
+
+	if (PushEnterCnt < PushEnterCntMax) { PushEnterCnt++; }
+	else
+	{
+		if (GameOverEnterBrink == TRUE)GameOverEnterBrink = FALSE;
+		else if (GameOverEnterBrink == FALSE)GameOverEnterBrink = TRUE;
+
+		PushEnterCnt = 0;	//カウンタを初期化
+	}
+	//PushEnterの点滅
+	if (GameOverEnterBrink == TRUE)
+	{
+		//PushEnterの描画
+		DrawGraph(GameOverEnter.x, GameOverEnter.y, GameOverEnter.handle, TRUE);
+	}
+
+	//DrawString(0, 0, "エンド画面", GetColor(0, 0, 0));
 	return;
 }
 
@@ -1310,6 +1397,9 @@ VOID ChangeDraw(VOID)
 		PlayDraw();		//プレイ画面の描画
 		break;
 	case GAME_SCENE_END:
+		EndDraw();		//エンド画面の描画
+		break;
+	case GAME_SCENE_GAMEOVER:
 		EndDraw();		//エンド画面の描画
 		break;
 	default:
