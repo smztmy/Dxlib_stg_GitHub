@@ -27,7 +27,7 @@ VOID FPSUpdate(VOID)
 	fps.NowTime = GetNowHiPerformanceCount();
 
 	//前回取得した時間から経過時間を秒(少数)に変換してからセット
-	fps.DaltaTime = (fps.NowTime - fps.OldTime) / 1000000.0f;
+	fps.DeltaTime = (fps.NowTime - fps.OldTime) / 1000000.0f;
 
 	//今回取得した時間を保存
 	fps.OldTime = fps.NowTime;
@@ -52,6 +52,12 @@ VOID FPSUpdate(VOID)
 		//カウンタ初期化
 		fps.Count = 1;
 	}
+
+	//ゲーム内時間カウントアップ
+	fps.GameTime += fps.DeltaTime;
+
+	//現在日付時刻を取得
+	GetDateTime(&fps.NowDataTime);
 
 	return;
 }
@@ -118,4 +124,22 @@ VOID FPSWait(VOID)
 	}
 
 	return;
+}
+
+/// <summary>
+/// ゲーム内時間のリセット
+/// </summary>
+VOID ResetGameTime(VOID)
+{
+	fps.GameTime = 0;
+
+	return;
+}
+
+/// <summary>
+/// ゲーム内時間を取得
+/// </summary>
+float GetGameTime(VOID)
+{
+	return fps.GameTime;
 }
