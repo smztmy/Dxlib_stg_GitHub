@@ -1192,6 +1192,23 @@ VOID PlayProc(VOID)
 		//•`‰æ‚³‚ê‚Ä‚¢‚é‚Æ‚«
 		if (teki_tama[i].IsDraw == TRUE)
 		{
+			for (int i = 0; i < TAMA_MAX; i++)
+			{
+				/*
+				if (CheckSoundMem(PlayerSE.handle) == 0)
+				{
+					PlaySoundMem(PlayerSE.handle, PlayerSE.playType);
+				}
+				*/
+				if (teki_tama[i].IsDraw == FALSE)
+				{
+					ShotTekiTama(&teki_tama[i], 0);
+
+					//’e‚ð1”­o‚µ‚½‚çAƒ‹[ƒv‚ð”²‚¯‚é
+					break;
+				}
+			}
+
 			//tama[i].x;
 			//’e‚ÌˆÊ’u‚ðC³
 			//@’†SˆÊ’u@{@”ò‚Î‚·Šp“x¨”ò‚Î‚·‹——£‚ðŒvŽZ@–@‹——£
@@ -1336,6 +1353,19 @@ VOID PlayDraw(VOID)
 			if (GAME_DEBUG == FALSE)
 			{
 				DrawBox(tama[i].coll.left, tama[i].coll.top, tama[i].coll.right, tama[i].coll.bottom,
+					GetColor(0, 0, 0), FALSE);
+			}
+		}
+	}
+
+	for (int i = 0; i < TEKI_TAMA_MAX; i++)
+	{
+		if (teki_tama[i].IsDraw == TRUE)
+		{
+			DrawTekiTama(&teki_tama[i]);
+			if (GAME_DEBUG == FALSE)
+			{
+				DrawBox(teki_tama[i].coll.left, teki_tama[i].coll.top, teki_tama[i].coll.right, teki_tama[i].coll.bottom,
 					GetColor(0, 0, 0), FALSE);
 			}
 		}
