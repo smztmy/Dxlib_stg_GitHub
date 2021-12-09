@@ -942,6 +942,21 @@ VOID PlayProc(VOID)
 
 		return;
 	}
+	else if (GetGameTime <= 0)
+	{
+		//シーン切り替え
+		//次のシーンの初期化をここで行うと楽
+		//BGMを止める
+		StopSoundMem(Play2BGM.handle);
+
+		//プレイ画面に切り替え
+		ChangeScene(GAME_SCENE_GAMEOVER);
+
+		//マウスを描画する
+		SetMouseDispFlag(TRUE);
+
+		return;
+	}
 	
 
 	//BGMが流れていないとき
@@ -1448,7 +1463,7 @@ VOID Play2Proc(VOID)
 
 		return;
 	}
-	else if (Score >= 10000)
+	else if (Score >= 20000)
 	{
 		//シーン切り替え
 		//次のシーンの初期化をここで行うと楽
@@ -1457,6 +1472,22 @@ VOID Play2Proc(VOID)
 
 		//プレイ画面に切り替え
 		ChangeScene(GAME_SCENE_END);
+
+		//マウスを描画する
+		SetMouseDispFlag(TRUE);
+
+		return;
+	}
+
+	else if (GetGameTime <= 0)
+	{
+		//シーン切り替え
+		//次のシーンの初期化をここで行うと楽
+		//BGMを止める
+		StopSoundMem(Play2BGM.handle);
+
+		//プレイ画面に切り替え
+		ChangeScene(GAME_SCENE_GAMEOVER);
 
 		//マウスを描画する
 		SetMouseDispFlag(TRUE);
